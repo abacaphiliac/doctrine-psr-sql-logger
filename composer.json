@@ -1,0 +1,49 @@
+{
+  "name": "abacaphiliac/doctrine-psr-sql-logger",
+  "description": "PSR-3 Compliant Doctrine SQL Logger",
+  "minimum-stability": "stable",
+  "type": "library",
+  "keywords": [
+    "dbal",
+    "doctrine",
+    "log",
+    "psr",
+    "sql"
+  ],
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Abacaphiliac\\Doctrine\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AbacaphiliacTest\\Doctrine\\": "test"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "require" : {
+    "php": "^7.0",
+    "doctrine/dbal": "^2.5",
+    "psr/log": "^1.0"
+  },
+  "require-dev" : {
+    "gamez/psr-testlogger": "^2.0",
+    "infection/infection": "^0.8",
+    "jakub-onderka/php-parallel-lint": "^1.0",
+    "johnkary/phpunit-speedtrap": "^2.0",
+    "phpunit/phpunit": "^6.5",
+    "roave/security-advisories": "dev-master",
+    "squizlabs/php_codesniffer": "^3.3"
+  },
+  "scripts": {
+    "build": "composer lint:syntax && composer lint:style && composer test:units && composer test:mutants",
+    "lint:beautify": "vendor/bin/phpcbf --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
+    "lint:style": "vendor/bin/phpcs --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
+    "lint:syntax": "vendor/bin/parallel-lint src/ test/",
+    "test:mutants": "vendor/bin/infection",
+    "test:units": "vendor/bin/phpunit --coverage-text"
+  }
+}
