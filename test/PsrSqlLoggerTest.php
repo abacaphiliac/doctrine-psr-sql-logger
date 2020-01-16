@@ -93,7 +93,7 @@ class PsrSqlLoggerTest extends TestCase
         self::assertNotEmpty($log->context->get('query_id'));
         self::assertInternalType('float', $log->context->get('start'));
         self::assertInternalType('float', $log->context->get('stop'));
-        self::assertInternalType('float', $log->context->get('duration_μs'));
+        self::assertInternalType('float', $log->context->get('duration_s'));
     }
 
     public function testSharedQueryId()
