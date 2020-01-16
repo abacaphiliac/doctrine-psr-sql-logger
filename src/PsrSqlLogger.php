@@ -28,7 +28,7 @@ class PsrSqlLogger implements SQLLogger
 
         if (!\is_callable($callable)) {
             throw new \InvalidArgumentException(sprintf(
-                '%s::%" is not callable',
+                '%s::%s" is not callable',
                 LoggerInterface::class,
                 $level
             ));
