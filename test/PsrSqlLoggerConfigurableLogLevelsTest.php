@@ -2,19 +2,19 @@
 
 namespace AbacaphiliacTest\test;
 
-use Abacaphiliac\Doctrine\PsrSqlLogger;
+use Abacaphiliac\Doctrine\PsrSqlLoggerConfigurableLogLevels;
 use Gamez\Psr\Log\Record;
 use Gamez\Psr\Log\TestLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
-use Psr\Log\NullLogger;
+use function usleep;
 
 /**
  * @covers \Abacaphiliac\Doctrine\PsrSqlLogger
  */
 class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
 {
-    /** @var PsrSqlLogger */
+    /** @var PsrSqlLoggerConfigurableLogLevels */
     private $sut;
 
     /** @var TestLogger */
@@ -32,7 +32,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
             LogLevel::WARNING => 100,
             LogLevel::CRITICAL => 500
         ];
-        $this->sut = new PsrSqlLogger($this->logger, LogLevel::DEBUG, $logLevelsForQueryDurationsInMilliseconds);
+        $this->sut = new PsrSqlLoggerConfigurableLogLevels($this->logger, LogLevel::DEBUG, $logLevelsForQueryDurationsInMilliseconds);
     }
 
     private function getRecordByIndex(int $index): Record
@@ -53,7 +53,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         self::assertSame(LogLevel::INFO, (string) $this->getRecordByIndex(1)->level);
 
         $this->sut->startQuery($this->sql);
-        \usleep(50 * 1000); //Sleep 50 milliseconds to simulate query execution
+        usleep(50 * 1000); //Sleep 50 milliseconds to simulate query execution
         $this->sut->stopQuery();
 
         self::assertSame(LogLevel::DEBUG, (string) $this->getRecordByIndex(2)->level);
