@@ -2,11 +2,13 @@
 
 namespace AbacaphiliacTest\test;
 
+use Abacaphiliac\Doctrine\LogLevelConfiguration;
 use Abacaphiliac\Doctrine\PsrSqlLoggerConfigurableLogLevels;
 use Gamez\Psr\Log\Record;
 use Gamez\Psr\Log\TestLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use TypeError;
 use function usleep;
 
 /**
@@ -23,28 +25,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
     /** @var string */
     private $sql = 'SELECT * FROM users WHERE id = :id';
 
-    protected function setUp()
-    {
-        $this->logger = new TestLogger();
-        $logLevelsForQueryDurationsInMilliseconds = [
-            LogLevel::INFO => 0,
-            LogLevel::NOTICE => 50,
-            LogLevel::WARNING => 100,
-            LogLevel::CRITICAL => 500
-        ];
-        $this->sut = new PsrSqlLoggerConfigurableLogLevels($this->logger, LogLevel::DEBUG, $logLevelsForQueryDurationsInMilliseconds);
-    }
-
-    private function getRecordByIndex(int $index): Record
-    {
-        $record = $this->logger->log[$index];
-
-        self::assertInstanceOf(Record::class, $record);
-
-        return $record;
-    }
-
-    public function testLogLevel()
+    public function testLogLevel() : void
     {
         $this->sut->startQuery($this->sql);
         $this->sut->stopQuery();
@@ -58,5 +39,56 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
 
         self::assertSame(LogLevel::DEBUG, (string) $this->getRecordByIndex(2)->level);
         self::assertSame(LogLevel::NOTICE, (string) $this->getRecordByIndex(3)->level);
+    }
+
+    private function getRecordByIndex(int $index): Record
+    {
+        $record = $this->logger->log[$index];
+
+        self::assertInstanceOf(Record::class, $record);
+
+        return $record;
+    }
+
+    public function testFallbackToDefaultLogLevel() : void
+    {
+        $defaultLogLevel = LogLevel::CRITICAL;
+        $psrSqlLoggerConfigurableLogLevels = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([]),
+            $defaultLogLevel
+        );
+
+        $psrSqlLoggerConfigurableLogLevels->startQuery($this->sql);
+        $psrSqlLoggerConfigurableLogLevels->stopQuery();
+
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(0)->level);
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(1)->level);
+    }
+
+    public function testInvalidConfiguration() : void
+    {
+        $this->expectException(TypeError::class);
+        $loggerWhichWillFailToInitialize = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([
+                0.12345 => LogLevel::DEBUG //Inverted key / value tuple
+            ])
+        );
+    }
+
+    protected function setUp()
+    {
+        $this->logger = new TestLogger();
+        $this->sut = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([
+                LogLevel::INFO => 0,
+                LogLevel::NOTICE => 50,
+                LogLevel::WARNING => 100,
+                LogLevel::CRITICAL => 500
+            ]),
+            LogLevel::DEBUG,
+        );
     }
 }

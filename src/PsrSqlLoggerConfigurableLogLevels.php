@@ -6,11 +6,8 @@ use Doctrine\DBAL\Logging\SQLLogger;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use function array_keys;
 use function array_merge;
-use function array_values;
 use function call_user_func;
-use function is_array;
 use function is_callable;
 use function microtime;
 use function uniqid;
@@ -32,18 +29,21 @@ class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
     /** @var string */
     private $defaultLogLevel;
 
-    /** @var array|null */
-    private $logLevelMapping;
+    /** @var LogLevelConfiguration|null */
+    private $logLevelConfiguration;
 
-    public function __construct(LoggerInterface $logger, string $defaultLogLevel = LogLevel::INFO, array $logLevelMapping = null)
-    {
-        $this->logger = $logger;
-        $this->defaultLogLevel = $defaultLogLevel;
-        $this->logLevelMapping = $logLevelMapping;
-        $this->startQueryCallable = $this->getStartQueryCallable($defaultLogLevel);
+    public function __construct(
+        LoggerInterface $logger,
+        LogLevelConfiguration $logLevelMapping,
+        string $defaultLogLevel = LogLevel::INFO
+    ) {
+        $this->logger                = $logger;
+        $this->logLevelConfiguration = $logLevelMapping;
+        $this->defaultLogLevel       = $defaultLogLevel;
+        $this->startQueryCallable    = $this->getStartQueryCallable($defaultLogLevel);
     }
 
-    private function getStartQueryCallable(string $level) : callable
+    private function getStartQueryCallable(string $level): callable
     {
         $callable = $this->getLoggerCallable($level);
 
@@ -63,7 +63,7 @@ class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
         return [$this->logger, $level];
     }
 
-    public function startQuery($sql, array $params = null, array $types = null)
+    public function startQuery($sql, array $params = null, array $types = null) : void
     {
         $this->queryId = uniqid('', true);
 
@@ -85,7 +85,7 @@ class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
         ];
     }
 
-    public function stopQuery()
+    public function stopQuery() : void
     {
         $stop = microtime(true);
         $durationInSeconds = $stop - $this->start;
@@ -100,27 +100,13 @@ class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
 
     private function getStopQueryCallable(float $durationInSeconds): callable
     {
-        return $this->getLoggerCallable($this->getApplicableLogLevel($durationInSeconds));
+        return $this->getLoggerCallable($this->getApplicableLogLevel($durationInSeconds) ?? $this->defaultLogLevel);
     }
 
-    private function getApplicableLogLevel(float $durationInSeconds): string
+    private function getApplicableLogLevel(float $durationInSeconds): ?string
     {
-        return is_array($this->logLevelMapping) ? $this->determineApplicableLogLevel($durationInSeconds) : $this->defaultLogLevel;
-    }
-
-    private function determineApplicableLogLevel(float $durationInSeconds) : string
-    {
-        $durationInMilliseconds = $durationInSeconds * 1000;
-        $durations = array_values($this->logLevelMapping); //Acquire a common / non-associative array
-        $durations[] = $durationInMilliseconds; //Append the incoming query duration in milliseconds to the array of duration thresholds
-
-        asort($durations, SORT_NUMERIC); //Sort the array from low to high: the provided duration will end up somewhere between the thresholds
-        $durations = array_values($durations); //A re-index is required after sorting
-
-        $key = array_search($durationInMilliseconds, $durations, true); //Determine at which position the duration ended up after sorting
-
-        $logLevels = array_keys($this->logLevelMapping);
-
-        return $logLevels[$key - 1]; //Now take the "previous" key
+        return $this->logLevelConfiguration instanceof LogLevelConfiguration
+            ? $this->logLevelConfiguration->getApplicableLogLevel($durationInSeconds)
+            : $this->defaultLogLevel;
     }
 }
