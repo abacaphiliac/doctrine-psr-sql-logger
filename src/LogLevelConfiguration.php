@@ -2,21 +2,55 @@
 
 namespace Abacaphiliac\Doctrine;
 
+use InvalidArgumentException;
+use Psr\Log\LogLevel;
+use ReflectionClass;
+use function asort;
+use function array_keys;
+use function array_search;
+use function array_values;
+use function print_r;
+use function count;
+
 class LogLevelConfiguration
 {
-    /** @var array */
+    /** @var array<string, int> */
     private $logLevelMapping = [];
 
     public function __construct(array $logLevelMapping)
     {
-        foreach ($logLevelMapping as $logLevelPriority => $durationThresholdInMilliseconds) {
-            $this->addLogLevelThreshold($logLevelPriority, $durationThresholdInMilliseconds);
+        foreach ($logLevelMapping as $logLevel => $durationThresholdInMilliseconds) {
+            $this->addLogLevelThreshold($logLevel, $durationThresholdInMilliseconds);
         }
     }
 
-    private function addLogLevelThreshold(string $logLevelPriority, int $durationThresholdInMilliseconds) : void
+    private function addLogLevelThreshold(string $logLevel, int $durationThresholdInMilliseconds) : void
     {
-        $this->logLevelMapping[$logLevelPriority] = $durationThresholdInMilliseconds;
+        $this->validateLogLevel($logLevel);
+        $this->logLevelMapping[$logLevel] = $durationThresholdInMilliseconds;
+    }
+
+    private function validateLogLevel(string $logLevel): void
+    {
+        if (! $this->isAllowedLogLevel($logLevel)) {
+            throw new InvalidArgumentException(sprintf(
+                'invalid LogLevel detected: "%s", please choose from: "%s"',
+                $logLevel,
+                print_r($this->getAllowedLogLevels(), true)
+            ));
+        }
+    }
+    
+    private function isAllowedLogLevel(string $logLevel): bool
+    {
+        return in_array($logLevel, $this->getAllowedLogLevels(), true);
+    }
+
+    private function getAllowedLogLevels(): array
+    {
+        static $allowedConstants;
+
+        return $allowedConstants ?: $allowedConstants = (new ReflectionClass(LogLevel::class))->getConstants();
     }
 
     public function getApplicableLogLevel(float $durationInSeconds): ?string

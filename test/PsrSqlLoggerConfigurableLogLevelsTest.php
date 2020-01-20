@@ -6,6 +6,7 @@ use Abacaphiliac\Doctrine\LogLevelConfiguration;
 use Abacaphiliac\Doctrine\PsrSqlLoggerConfigurableLogLevels;
 use Gamez\Psr\Log\Record;
 use Gamez\Psr\Log\TestLogger;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use TypeError;
@@ -72,7 +73,18 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         $loggerWhichWillFailToInitialize = new PsrSqlLoggerConfigurableLogLevels(
             $this->logger,
             new LogLevelConfiguration([
-                0.12345 => LogLevel::DEBUG //Inverted key / value tuple
+                0.12345 => LogLevel::DEBUG, //Inverted key / value tuple
+            ])
+        );
+    }
+
+    public function testInvalidLogLevelUsedInConfiration() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $loggerWhichWillFailToInitialize = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([
+                'SOME_INVALID_LOG_LEVEL' => 100,
             ])
         );
     }
