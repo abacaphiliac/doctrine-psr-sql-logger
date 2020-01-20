@@ -100,7 +100,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
                 LogLevel::WARNING => 100,
                 LogLevel::CRITICAL => 500
             ]),
-            LogLevel::DEBUG,
+            LogLevel::DEBUG
         );
     }
 }
