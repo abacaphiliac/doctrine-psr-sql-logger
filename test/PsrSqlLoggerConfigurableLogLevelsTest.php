@@ -1,15 +1,15 @@
 <?php
 
-namespace AbacaphiliacTest\test;
+namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\LogLevelConfiguration;
 use Abacaphiliac\Doctrine\PsrSqlLoggerConfigurableLogLevels;
-use Gamez\Psr\Log\Record;
-use Gamez\Psr\Log\TestLogger;
+use Psr\Log\Test\TestLogger;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use TypeError;
+use stdClass;
 use function usleep;
 
 /**
@@ -42,13 +42,13 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         self::assertSame(LogLevel::NOTICE, (string) $this->getRecordByIndex(3)->level);
     }
 
-    private function getRecordByIndex(int $index): Record
+    private function getRecordByIndex(int $index): stdClass
     {
-        $record = $this->logger->log[$index];
+        $record = $this->logger->records[$index];
 
-        self::assertInstanceOf(Record::class, $record);
+        self::assertInternalType('array', $record);
 
-        return $record;
+        return (object) $record;
     }
 
     public function testFallbackToDefaultLogLevel() : void
