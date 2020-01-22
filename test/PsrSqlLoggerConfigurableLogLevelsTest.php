@@ -95,7 +95,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         $this->sut = new PsrSqlLoggerConfigurableLogLevels(
             $this->logger,
             new LogLevelConfiguration([
-                LogLevel::INFO => 0,
+                LogLevel::INFO => 25,
                 LogLevel::NOTICE => 50,
                 LogLevel::WARNING => 100,
                 LogLevel::CRITICAL => 500
