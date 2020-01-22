@@ -78,7 +78,8 @@ final class LogLevelConfiguration
         $key = array_search($durationInMilliseconds, $durationThresholds, true);
 
         $logLevels = array_keys($this->logLevelMapping);
+        $applicableLogLevelIndex = $key > 0 ? $key - 1 : 0; //Take the "previous" key if this is possible
 
-        return $logLevels[$key - 1]; //Now take the "previous" key
+        return $logLevels[$applicableLogLevelIndex];
     }
 }
