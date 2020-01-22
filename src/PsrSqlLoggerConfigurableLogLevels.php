@@ -34,11 +34,11 @@ final class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
 
     public function __construct(
         LoggerInterface $logger,
-        LogLevelConfiguration $logLevelMapping,
+        LogLevelConfiguration $logLevelConfiguration,
         string $defaultLogLevel = LogLevel::INFO
     ) {
         $this->logger                = $logger;
-        $this->logLevelConfiguration = $logLevelMapping;
+        $this->logLevelConfiguration = $logLevelConfiguration;
         $this->defaultLogLevel       = $defaultLogLevel;
         $this->startQueryCallable    = $this->getStartQueryCallable($defaultLogLevel);
     }
