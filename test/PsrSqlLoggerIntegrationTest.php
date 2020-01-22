@@ -1,6 +1,6 @@
 <?php
 
-namespace AbacaphiliacTest\test;
+namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\PsrSqlLogger;
 use Doctrine\DBAL\Connection;
