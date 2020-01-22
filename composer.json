@@ -27,23 +27,30 @@
   "require" : {
     "php": "^7.1",
     "doctrine/dbal": "^2.5",
-    "psr/log": "^1.0"
+    "psr/log": "^1.1"
   },
   "require-dev" : {
-    "gamez/psr-testlogger": "^2.0",
     "infection/infection": "^0.8",
     "jakub-onderka/php-parallel-lint": "^1.0",
     "johnkary/phpunit-speedtrap": "^2.0",
+    "phpstan/phpstan": "^0.12",
     "phpunit/phpunit": "^6.5",
     "roave/security-advisories": "dev-master",
     "squizlabs/php_codesniffer": "^3.4"
   },
   "scripts": {
-    "build": "composer lint:syntax && composer lint:style && composer test:units && composer test:mutants",
+    "build": [
+      "composer lint:syntax",
+      "composer lint:style",
+      "composer test:units",
+      "composer test:phpstan",
+      "composer test:mutants"
+    ],
     "lint:beautify": "vendor/bin/phpcbf --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
     "lint:style": "vendor/bin/phpcs --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
     "lint:syntax": "vendor/bin/parallel-lint src/ test/",
     "test:mutants": "vendor/bin/infection",
+    "test:phpstan": "vendor/bin/phpstan analyse --level=5 src/ test/",
     "test:units": "vendor/bin/phpunit --coverage-text"
   }
 }

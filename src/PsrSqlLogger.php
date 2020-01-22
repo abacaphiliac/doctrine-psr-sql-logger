@@ -67,7 +67,7 @@ class PsrSqlLogger implements SQLLogger
             'query_id' => $this->queryId,
             'start' => $this->start,
             'stop' => $stop,
-            'duration_μs' => $stop - $this->start,
+            'duration_s' => $stop - $this->start,
         ]);
     }
 }
