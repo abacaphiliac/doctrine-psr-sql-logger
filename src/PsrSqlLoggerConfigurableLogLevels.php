@@ -12,7 +12,7 @@ use function is_callable;
 use function microtime;
 use function uniqid;
 
-class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
+final class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
 {
     /** @var LoggerInterface */
     private $logger;

@@ -12,7 +12,7 @@ use function array_values;
 use function print_r;
 use function count;
 
-class LogLevelConfiguration
+final class LogLevelConfiguration
 {
     /** @var array<string, int> */
     private $logLevelMapping = [];
