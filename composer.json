@@ -27,10 +27,9 @@
   "require" : {
     "php": "^7.0",
     "doctrine/dbal": "^2.5",
-    "psr/log": "^1.0"
+    "psr/log": "^1.1"
   },
   "require-dev" : {
-    "gamez/psr-testlogger": "^2.0",
     "infection/infection": "^0.8",
     "jakub-onderka/php-parallel-lint": "^1.0",
     "johnkary/phpunit-speedtrap": "^2.0",
