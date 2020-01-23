@@ -79,6 +79,6 @@ final class LogLevelConfiguration
 
         $logLevels = array_keys($this->logLevelMapping);
 
-        return $logLevels[$key - 1] ?? null ;
+        return $logLevels[$key - 1] ?? null;
     }
 }
