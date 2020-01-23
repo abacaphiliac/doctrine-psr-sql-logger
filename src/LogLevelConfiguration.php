@@ -58,7 +58,7 @@ final class LogLevelConfiguration
         return count($this->logLevelMapping) > 0 ? $this->determineApplicableLogLevel($durationInSeconds) : null;
     }
 
-    private function determineApplicableLogLevel(float $durationInSeconds) : string
+    private function determineApplicableLogLevel(float $durationInSeconds) : ?string
     {
         $durationInMilliseconds = $durationInSeconds * 1000;
 
@@ -78,8 +78,7 @@ final class LogLevelConfiguration
         $key = array_search($durationInMilliseconds, $durationThresholds, true);
 
         $logLevels = array_keys($this->logLevelMapping);
-        $applicableLogLevelIndex = $key > 0 ? $key - 1 : 0; //Take the "previous" key if this is possible
 
-        return $logLevels[$applicableLogLevelIndex];
+        return $logLevels[$key - 1] ?? null ;
     }
 }
