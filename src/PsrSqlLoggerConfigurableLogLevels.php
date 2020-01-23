@@ -17,6 +17,9 @@ final class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var string */
+    private $sql;
+
     /** @var float */
     private $start;
 
@@ -65,8 +68,8 @@ final class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
 
     public function startQuery($sql, array $params = null, array $types = null) : void
     {
+        $this->sql = $sql;
         $this->queryId = uniqid('', true);
-
         $this->start = microtime(true);
 
         call_user_func($this->startQueryCallable, 'Query started', array_merge(
@@ -95,6 +98,7 @@ final class PsrSqlLoggerConfigurableLogLevels implements SQLLogger
             'start' => $this->start,
             'stop' => $stop,
             'duration_s' => $durationInSeconds,
+            'sql' => $this->sql,
         ]);
     }
 
