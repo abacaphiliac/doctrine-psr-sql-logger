@@ -17,29 +17,40 @@ use function usleep;
  */
 class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
 {
-    /** @var PsrSqlLoggerConfigurableLogLevels */
-    private $sut;
-
-    /** @var TestLogger */
+    /**
+     * @var TestLogger
+     */
     private $logger;
-
+    
     /** @var string */
     private $sql = 'SELECT * FROM users WHERE id = :id';
 
     public function testLogLevel() : void
     {
-        $this->sut->startQuery($this->sql);
-        $this->sut->stopQuery();
+        $defaultLogLevel = LogLevel::DEBUG;
+        $logLevelAfterReachingThreshold = LogLevel::INFO;
+        $thresholdInMilliseconds = 25;
+        $psrSqlLoggerConfigurableLogLevels = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([
+                $logLevelAfterReachingThreshold => $thresholdInMilliseconds,
+            ]),
+            $defaultLogLevel
+        );
 
-        self::assertSame(LogLevel::DEBUG, (string) $this->getRecordByIndex(0)->level);
-        self::assertSame(LogLevel::INFO, (string) $this->getRecordByIndex(1)->level);
+        $psrSqlLoggerConfigurableLogLevels->startQuery($this->sql);
+        $psrSqlLoggerConfigurableLogLevels->stopQuery();
 
-        $this->sut->startQuery($this->sql);
-        usleep(50 * 1000); //Sleep 50 milliseconds to simulate query execution
-        $this->sut->stopQuery();
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(0)->level);
+        //No threshold is reached yet: default log level should be used
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(1)->level);
 
-        self::assertSame(LogLevel::DEBUG, (string) $this->getRecordByIndex(2)->level);
-        self::assertSame(LogLevel::NOTICE, (string) $this->getRecordByIndex(3)->level);
+        $psrSqlLoggerConfigurableLogLevels->startQuery($this->sql);
+        usleep($thresholdInMilliseconds * 1000); //Sleep to simulate query execution and reach the threshold
+        $psrSqlLoggerConfigurableLogLevels->stopQuery();
+
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(2)->level);
+        self::assertSame($logLevelAfterReachingThreshold, (string) $this->getRecordByIndex(3)->level);
     }
 
     private function getRecordByIndex(int $index): stdClass
@@ -67,6 +78,24 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(1)->level);
     }
 
+    public function testFallbackToDefaultLogLevelWhenNoThresholdIsReached() : void
+    {
+        $defaultLogLevel = LogLevel::DEBUG;
+        $psrSqlLoggerConfigurableLogLevels = new PsrSqlLoggerConfigurableLogLevels(
+            $this->logger,
+            new LogLevelConfiguration([
+                LogLevel::CRITICAL => 1000 * 60, //Use a huge threshold of one minute which should never be reached
+            ]),
+            $defaultLogLevel
+        );
+
+        $psrSqlLoggerConfigurableLogLevels->startQuery($this->sql);
+        $psrSqlLoggerConfigurableLogLevels->stopQuery();
+
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(0)->level);
+        self::assertSame($defaultLogLevel, (string) $this->getRecordByIndex(1)->level);
+    }
+
     public function testInvalidConfiguration() : void
     {
         $this->expectException(TypeError::class);
@@ -78,7 +107,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         );
     }
 
-    public function testInvalidLogLevelUsedInConfiration() : void
+    public function testInvalidLogLevelUsedInConfiguration() : void
     {
         $this->expectException(InvalidArgumentException::class);
         $loggerWhichWillFailToInitialize = new PsrSqlLoggerConfigurableLogLevels(
@@ -92,15 +121,5 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
     protected function setUp()
     {
         $this->logger = new TestLogger();
-        $this->sut = new PsrSqlLoggerConfigurableLogLevels(
-            $this->logger,
-            new LogLevelConfiguration([
-                LogLevel::INFO => 0,
-                LogLevel::NOTICE => 50,
-                LogLevel::WARNING => 100,
-                LogLevel::CRITICAL => 500
-            ]),
-            LogLevel::DEBUG
-        );
     }
 }
