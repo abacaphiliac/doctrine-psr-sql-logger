@@ -31,7 +31,7 @@
   },
   "require-dev" : {
     "infection/infection": "^0.8",
-    "jakub-onderka/php-parallel-lint": "^1.0",
+    "php-parallel-lint/php-parallel-lint": "^1.2",
     "johnkary/phpunit-speedtrap": "^2.0",
     "phpstan/phpstan": "^0.12",
     "phpunit/phpunit": "^6.5",
@@ -43,7 +43,6 @@
       "composer lint:syntax",
       "composer lint:style",
       "composer test:units",
-      "composer test:phpstan",
       "composer test:mutants"
     ],
     "lint:beautify": "vendor/bin/phpcbf --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
