@@ -25,7 +25,7 @@
     "sort-packages": true
   },
   "require" : {
-    "php": "^7.1",
+    "php": "^7.1 || ^8.0",
     "doctrine/dbal": "^2.5",
     "psr/log": "^1.1"
   },
@@ -43,6 +43,7 @@
       "composer lint:syntax",
       "composer lint:style",
       "composer test:units",
+      "composer test:phpstan",
       "composer test:mutants"
     ],
     "lint:beautify": "vendor/bin/phpcbf --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
