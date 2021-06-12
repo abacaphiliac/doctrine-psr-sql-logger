@@ -55,6 +55,10 @@ final class LogLevelConfiguration
 
     public function getApplicableLogLevel(float $durationInSeconds): ?string
     {
+        if ($durationInSeconds <= 0) {
+            return null;
+        }
+
         return count($this->logLevelMapping) > 0 ? $this->determineApplicableLogLevel($durationInSeconds) : null;
     }
 

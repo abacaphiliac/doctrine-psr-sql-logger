@@ -58,7 +58,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
     {
         $record = $this->logger->records[$index];
 
-        self::assertInternalType('array', $record);
+        self::assertIsArray($record);
 
         return (object) $record;
     }
@@ -166,7 +166,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         );
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->logger = new TestLogger();
     }

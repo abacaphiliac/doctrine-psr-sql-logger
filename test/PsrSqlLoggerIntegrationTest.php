@@ -21,7 +21,7 @@ class PsrSqlLoggerIntegrationTest extends TestCase
     /**
      * @throws \Doctrine\DBAL\DBALException
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->logger = new TestLogger();
 
@@ -41,7 +41,7 @@ class PsrSqlLoggerIntegrationTest extends TestCase
     {
         $record = $this->logger->records[$index];
 
-        self::assertInternalType('array', $record);
+        self::assertIsArray($record);
 
         return (object) $record;
     }
