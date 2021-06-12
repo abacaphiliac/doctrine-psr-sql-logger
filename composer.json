@@ -49,8 +49,8 @@
     "lint:beautify": "vendor/bin/phpcbf --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
     "lint:style": "vendor/bin/phpcs --standard=PSR2 --extensions=php --severity=1 src/ test/ -v",
     "lint:syntax": "vendor/bin/parallel-lint src/ test/",
-    "test:mutants": "vendor/bin/infection",
+    "test:mutants": "XDEBUG_MODE=coverage vendor/bin/infection",
     "test:phpstan": "vendor/bin/phpstan analyse --level=5 src/ test/",
-    "test:units": "vendor/bin/phpunit --coverage-text"
+    "test:units": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text"
   }
 }
