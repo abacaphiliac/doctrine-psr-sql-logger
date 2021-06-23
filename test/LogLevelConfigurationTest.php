@@ -15,7 +15,7 @@ class LogLevelConfigurationTest extends TestCase
     /** @var LogLevelConfiguration */
     private $sut;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->sut = new LogLevelConfiguration([
             LogLevel::DEBUG => 0,

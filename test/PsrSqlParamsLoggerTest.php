@@ -22,7 +22,7 @@ class PsrSqlParamsLoggerTest extends TestCase
     /** @var string */
     private $sql = 'SELECT * FROM users WHERE id = :id';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->logger = new TestLogger();
 
@@ -33,7 +33,7 @@ class PsrSqlParamsLoggerTest extends TestCase
     {
         $record = $this->logger->records[$index];
 
-        self::assertInternalType('array', $record);
+        self::assertIsArray($record);
 
         return (object) $record;
     }
@@ -89,9 +89,9 @@ class PsrSqlParamsLoggerTest extends TestCase
         self::assertSame(LogLevel::INFO, (string) $log->level);
         self::assertSame('Query finished', (string) $log->message);
         self::assertNotEmpty($log->context['query_id']);
-        self::assertInternalType('float', $log->context['start']);
-        self::assertInternalType('float', $log->context['stop']);
-        self::assertInternalType('float', $log->context['duration_s']);
+        self::assertIsFloat($log->context['start']);
+        self::assertIsFloat($log->context['stop']);
+        self::assertIsFloat($log->context['duration_s']);
     }
 
     public function testSharedQueryId()
@@ -166,11 +166,10 @@ class PsrSqlParamsLoggerTest extends TestCase
         self::assertNotEquals($queryId, $secondLog->context['query_id']);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testInvalidLogLevel()
     {
+        self:: expectException(\InvalidArgumentException::class);
+
         new PsrSqlParamsLogger(new NullLogger(), 'InvalidLevel');
     }
 }
