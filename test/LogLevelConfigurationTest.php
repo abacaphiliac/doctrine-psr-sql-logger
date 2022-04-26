@@ -33,7 +33,7 @@ class LogLevelConfigurationTest extends TestCase
     {
         return [
             [-1, null],
-            [0, null],
+            [0, LogLevel::DEBUG],
             [1, LogLevel::DEBUG],
             [9, LogLevel::DEBUG],
             [10, LogLevel::INFO],
@@ -91,5 +91,19 @@ class LogLevelConfigurationTest extends TestCase
         new LogLevelConfiguration([
             'InvalidLevel' => 1000,
         ]);
+    }
+
+    public function testSparseConfig(): void
+    {
+        $sut = new LogLevelConfiguration([
+            LogLevel::ERROR => 1000,
+            LogLevel::CRITICAL => 2000,
+            LogLevel::ALERT => 3000,
+            LogLevel::EMERGENCY => 4000,
+        ]);
+
+        $actual = $sut->getApplicableLogLevel(0.5);
+
+        self::assertNull($actual);
     }
 }

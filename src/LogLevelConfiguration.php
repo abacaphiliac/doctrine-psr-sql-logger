@@ -69,6 +69,11 @@ final class LogLevelConfiguration
         //Acquire a common / non-associative array with all the thresholds
         $durationThresholds = array_values($this->logLevelMapping);
 
+        $exactDurationMatch = array_search($durationInMilliseconds, $this->logLevelMapping);
+        if ($exactDurationMatch !== false) {
+            return $exactDurationMatch;
+        }
+
         //Append the incoming query duration in milliseconds to the array of duration thresholds
         $durationThresholds[] = $durationInMilliseconds;
 
