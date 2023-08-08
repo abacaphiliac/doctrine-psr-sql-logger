@@ -3,9 +3,10 @@
 namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\PsrSqlLogger;
+use Beste\Psr\Log\Record;
+use Beste\Psr\Log\TestLogger;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\Test\TestLogger;
 
 /**
  * @covers \Abacaphiliac\Doctrine\PsrSqlLogger
@@ -23,7 +24,7 @@ class PsrSqlLoggerIntegrationTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->logger = new TestLogger();
+        $this->logger = TestLogger::create();
 
         $config = new \Doctrine\DBAL\Configuration();
         $config->setSQLLogger(new PsrSqlLogger($this->logger));
@@ -37,13 +38,9 @@ class PsrSqlLoggerIntegrationTest extends TestCase
         );
     }
 
-    private function getRecordByIndex(int $index): \stdClass
+    private function getRecordByIndex(int $index): Record
     {
-        $record = $this->logger->records[$index];
-
-        self::assertIsArray($record);
-
-        return (object) $record;
+        return $this->logger->records->all()[$index];
     }
 
     public function testLogsQuery()
@@ -59,21 +56,21 @@ class PsrSqlLoggerIntegrationTest extends TestCase
 
         $log = $this->getRecordByIndex(0);
 
-        $queryId = $log->context['query_id'];
+        $queryId = $log->context->data['query_id'];
 
-        self::assertCount(2, \array_filter($this->logger->records, function ($record) use ($queryId) {
-            return $record['context']['query_id'] === $queryId;
+        self::assertCount(2, \array_filter($this->logger->records->all(), function (Record $record) use ($queryId) {
+            return $record->context->data['query_id'] === $queryId;
         }));
-        self::assertSame('Query started', $this->getRecordByIndex(0)->message);
-        self::assertSame('Query finished', $this->getRecordByIndex(1)->message);
+        self::assertSame('Query started', (string) $this->getRecordByIndex(0)->message);
+        self::assertSame('Query finished', (string) $this->getRecordByIndex(1)->message);
 
         // Generates 2 more logs with a new query_id:
         $schema->listTables();
 
         self::assertCount(4, $this->logger->records);
 
-        self::assertCount(2, \array_filter($this->logger->records, function ($record) use ($queryId) {
-            return $record['context']['query_id'] === $queryId;
+        self::assertCount(2, \array_filter($this->logger->records->all(), function (Record $record) use ($queryId) {
+            return $record->context->data['query_id'] === $queryId;
         }));
     }
 }

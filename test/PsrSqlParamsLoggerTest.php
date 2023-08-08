@@ -3,10 +3,11 @@
 namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\PsrSqlParamsLogger;
+use Beste\Psr\Log\Record;
+use Beste\Psr\Log\TestLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 
 /**
  * @covers \Abacaphiliac\Doctrine\PsrSqlParamsLogger
@@ -24,18 +25,14 @@ class PsrSqlParamsLoggerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new TestLogger();
+        $this->logger = TestLogger::create();
 
         $this->sut = new PsrSqlParamsLogger($this->logger);
     }
 
-    private function getRecordByIndex(int $index): \stdClass
+    private function getRecordByIndex(int $index): Record
     {
-        $record = $this->logger->records[$index];
-
-        self::assertIsArray($record);
-
-        return (object) $record;
+        return $this->logger->records->all()[$index];
     }
 
     public function testLogsQuery()
@@ -56,13 +53,12 @@ class PsrSqlParamsLoggerTest extends TestCase
 
         $log = $this->getRecordByIndex(0);
 
-        self::assertInstanceOf(\stdClass::class, $log);
         self::assertSame(LogLevel::INFO, (string) $log->level);
         self::assertSame('Query started', (string) $log->message);
-        self::assertNotEmpty($log->context['query_id']);
-        self::assertSame($this->sql, $log->context['sql']);
-        self::assertSame([':id' => 1234], $log->context['params']);
-        self::assertSame([':id' => \PDO::PARAM_INT], $log->context['types']);
+        self::assertNotEmpty($log->context->data['query_id']);
+        self::assertSame($this->sql, $log->context->data['sql']);
+        self::assertSame([':id' => 1234], $log->context->data['params']);
+        self::assertSame([':id' => \PDO::PARAM_INT], $log->context->data['types']);
     }
 
     public function testLogsDuration()
@@ -85,13 +81,12 @@ class PsrSqlParamsLoggerTest extends TestCase
 
         $log = $this->getRecordByIndex(1);
 
-        self::assertInstanceOf(\stdClass::class, $log);
         self::assertSame(LogLevel::INFO, (string) $log->level);
         self::assertSame('Query finished', (string) $log->message);
-        self::assertNotEmpty($log->context['query_id']);
-        self::assertIsFloat($log->context['start']);
-        self::assertIsFloat($log->context['stop']);
-        self::assertIsFloat($log->context['duration_s']);
+        self::assertNotEmpty($log->context->data['query_id']);
+        self::assertIsFloat($log->context->data['start']);
+        self::assertIsFloat($log->context->data['stop']);
+        self::assertIsFloat($log->context->data['duration_s']);
     }
 
     public function testSharedQueryId()
@@ -114,16 +109,13 @@ class PsrSqlParamsLoggerTest extends TestCase
 
         $startLog = $this->getRecordByIndex(0);
 
-        self::assertInstanceOf(\stdClass::class, $startLog);
-
-        $queryId = $startLog->context['query_id'];
+        $queryId = $startLog->context->data['query_id'];
         self::assertNotEmpty($queryId);
 
 
         $stopLog = $this->getRecordByIndex(1);
 
-        self::assertInstanceOf(\stdClass::class, $stopLog);
-        self::assertSame($queryId, $stopLog->context['query_id']);
+        self::assertSame($queryId, $stopLog->context->data['query_id']);
     }
 
     public function testQueryIdChanges()
@@ -154,16 +146,14 @@ class PsrSqlParamsLoggerTest extends TestCase
 
         $firstLog = $this->getRecordByIndex(0);
 
-        self::assertInstanceOf(\stdClass::class, $firstLog);
 
-        $queryId = $firstLog->context['query_id'];
+        $queryId = $firstLog->context->data['query_id'];
         self::assertNotEmpty($queryId);
 
         $secondLog = $this->getRecordByIndex(1);
 
-        self::assertInstanceOf(\stdClass::class, $secondLog);
-        self::assertNotEmpty($secondLog->context['query_id']);
-        self::assertNotEquals($queryId, $secondLog->context['query_id']);
+        self::assertNotEmpty($secondLog->context->data['query_id']);
+        self::assertNotEquals($queryId, $secondLog->context->data['query_id']);
     }
 
     public function testInvalidLogLevel()

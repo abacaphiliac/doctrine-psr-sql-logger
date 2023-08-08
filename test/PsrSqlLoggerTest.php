@@ -3,10 +3,11 @@
 namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\PsrSqlLogger;
+use Beste\Psr\Log\Record;
+use Beste\Psr\Log\TestLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 
 /**
  * @covers \Abacaphiliac\Doctrine\PsrSqlLogger
@@ -24,18 +25,14 @@ class PsrSqlLoggerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new TestLogger();
+        $this->logger =  TestLogger::create();
 
         $this->sut = new PsrSqlLogger($this->logger);
     }
 
-    private function getRecordByIndex(int $index): \stdClass
+    private function getRecordByIndex(int $index): Record
     {
-        $record = $this->logger->records[$index];
-
-        self::assertIsArray($record);
-
-        return (object) $record;
+        return $this->logger->records->all()[$index];
     }
 
     public function testLogsQuery()
@@ -58,9 +55,9 @@ class PsrSqlLoggerTest extends TestCase
 
         self::assertSame(LogLevel::INFO, (string) $log->level);
         self::assertSame('Query started', (string) $log->message);
-        self::assertNotEmpty($log->context['query_id']);
-        self::assertSame($this->sql, $log->context['sql']);
-        self::assertSame([':id' => \PDO::PARAM_INT], $log->context['types']);
+        self::assertNotEmpty($log->context->data['query_id']);
+        self::assertSame($this->sql, $log->context->data['sql']);
+        self::assertSame([':id' => \PDO::PARAM_INT], $log->context->data['types']);
     }
 
     public function testLogsDuration()
@@ -85,10 +82,10 @@ class PsrSqlLoggerTest extends TestCase
 
         self::assertSame(LogLevel::INFO, (string) $log->level);
         self::assertSame('Query finished', (string) $log->message);
-        self::assertNotEmpty($log->context['query_id']);
-        self::assertIsFloat($log->context['start']);
-        self::assertIsFloat($log->context['stop']);
-        self::assertIsFloat($log->context['duration_s']);
+        self::assertNotEmpty($log->context->data['query_id']);
+        self::assertIsFloat($log->context->data['start']);
+        self::assertIsFloat($log->context->data['stop']);
+        self::assertIsFloat($log->context->data['duration_s']);
     }
 
     public function testSharedQueryId()
@@ -111,14 +108,14 @@ class PsrSqlLoggerTest extends TestCase
 
         $startLog = $this->getRecordByIndex(0);
 
-        self::assertInstanceOf(\stdClass::class, $startLog);
+        self::assertInstanceOf(Record::class, $startLog);
 
-        $queryId = $startLog->context['query_id'];
+        $queryId = $startLog->context->data['query_id'];
         self::assertNotEmpty($queryId);
 
         $stopLog = $this->getRecordByIndex(1);
 
-        self::assertSame($queryId, $stopLog->context['query_id']);
+        self::assertSame($queryId, $stopLog->context->data['query_id']);
     }
 
     public function testQueryIdChanges()
@@ -149,13 +146,13 @@ class PsrSqlLoggerTest extends TestCase
 
         $firstLog = $this->getRecordByIndex(0);
 
-        $queryId = $firstLog->context['query_id'];
+        $queryId = $firstLog->context->data['query_id'];
         self::assertNotEmpty($queryId);
 
         $secondLog = $this->getRecordByIndex(1);
 
-        self::assertNotEmpty($secondLog->context['query_id']);
-        self::assertNotEquals($queryId, $secondLog->context['query_id']);
+        self::assertNotEmpty($secondLog->context->data['query_id']);
+        self::assertNotEquals($queryId, $secondLog->context->data['query_id']);
     }
 
     public function testInvalidLogLevel()

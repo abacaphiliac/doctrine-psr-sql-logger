@@ -17,12 +17,7 @@ class PsrSqlLogger implements SQLLogger
     /** @var string */
     private $queryId;
 
-    /**
-     * PsrSqlLogger constructor.
-     * @param LoggerInterface $logger
-     * @param string $level
-     */
-    public function __construct(LoggerInterface $logger, $level = LogLevel::INFO)
+    public function __construct(LoggerInterface $logger, string $level = LogLevel::INFO)
     {
         $callable = [$logger, $level];
 
