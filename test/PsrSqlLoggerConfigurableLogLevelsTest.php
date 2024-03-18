@@ -4,8 +4,9 @@ namespace AbacaphiliacTest\Doctrine;
 
 use Abacaphiliac\Doctrine\LogLevelConfiguration;
 use Abacaphiliac\Doctrine\PsrSqlLoggerConfigurableLogLevels;
+use Beste\Psr\Log\Record;
+use Beste\Psr\Log\TestLogger;
 use Psr\Log\LoggerInterface;
-use Psr\Log\Test\TestLogger;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -54,13 +55,9 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         self::assertSame($logLevelAfterReachingThreshold, (string) $this->getRecordByIndex(3)->level);
     }
 
-    private function getRecordByIndex(int $index): stdClass
+    private function getRecordByIndex(int $index): Record
     {
-        $record = $this->logger->records[$index];
-
-        self::assertIsArray($record);
-
-        return (object) $record;
+        return $this->logger->records->all()[$index];
     }
 
     public function testFallbackToDefaultLogLevel() : void
@@ -103,7 +100,7 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         $loggerWhichWillFailToInitialize = new PsrSqlLoggerConfigurableLogLevels(
             $this->logger,
             new LogLevelConfiguration([
-                0.12345 => LogLevel::DEBUG, //Inverted key / value tuple
+                12345 => LogLevel::DEBUG, //Inverted key / value tuple
             ])
         );
     }
@@ -124,39 +121,39 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         new PsrSqlLoggerConfigurableLogLevels(
             new class implements LoggerInterface {
-                public function emergency($message, array $context = array())
+                public function emergency($message, array $context = array()) : void
                 {
                 }
 
-                public function alert($message, array $context = array())
+                public function alert($message, array $context = array()) : void
                 {
                 }
 
-                public function critical($message, array $context = array())
+                public function critical($message, array $context = array()) : void
                 {
                 }
 
-                public function error($message, array $context = array())
+                public function error($message, array $context = array()) : void
                 {
                 }
 
-                public function warning($message, array $context = array())
+                public function warning($message, array $context = array()) : void
                 {
                 }
 
-                public function notice($message, array $context = array())
+                public function notice($message, array $context = array()) : void
                 {
                 }
 
-                public function info($message, array $context = array())
+                public function info($message, array $context = array()) : void
                 {
                 }
 
-                public function debug($message, array $context = array())
+                public function debug($message, array $context = array()) : void
                 {
                 }
 
-                public function log($level, $message, array $context = array())
+                public function log($level, $message, array $context = array()) : void
                 {
                 }
             },
@@ -168,6 +165,6 @@ class PsrSqlLoggerConfigurableLogLevelsTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new TestLogger();
+        $this->logger = TestLogger::create();
     }
 }
